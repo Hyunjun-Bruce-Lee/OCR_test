@@ -1,20 +1,39 @@
 from pypylon import pylon # 3.0.1
 import cv2 # 4.8.0
 import imutils # 0.5.4
+import moviepy.video.io.ImageSequenceClip # 1.0.3
+import numpy as np # 1.19.5
 import os
 from datetime import datetime
 import argparse
 
+
 class basler:
-    def __init__(self):
+    def __init__(self, height_multiplier = 1):
         self.camera = pylon.InstantCamera(pylon.TlFactory.GetInstance().CreateFirstDevice()) # declare camera instance
         self.converter = pylon.ImageFormatConverter() # declare image format converter
         self.converter.OutputBitAlignment = pylon.OutputBitAlignment_MsbAligned # add an arg to converter
         self.converter.OutputPixelFormat = pylon.PixelType_BGR8packed # add an arg to converter
+        
+        self.height = height_multiplier * 480
+        self.frame_holder = list()
+        self.is_recording = False
+
+        self.base_dir = f'C:/Users/{os.getlogin()}/Documents/basler_camera_data'
+        if not os.path.isdir(self.base_dir):
+            os.mkdir(self.base_dir)
+
+        print(f"created data will be stored at {self.base_dir}")
+
+    def check_dir_for_the_day(self):
+        dir_for_the_day = self.base_dir + f'/{datetime.today().strftime("%Y%m%d")}'
+        if not os.path.isdir(dir_for_the_day):
+            os.mkdir(dir_for_the_day)
+        return dir_for_the_day
 
     def get_cam_status(self):
         # check whether if camera is running or not
-        return self.camera.IsGrabbing() 
+        return self.camera.IsGrabbing()
 
     def run_camera(self):
         # activate camera
@@ -27,77 +46,109 @@ class basler:
             self.camera.StopGrabbing()
             return '>>> camera stopped'
         else:
-            return ">>> camera is not running"
+            return '>>> camera is not running'
         
-    def capture_current_frame(self, display_img = False, save_captured_img = False):
-        # capture and display(+save) camera's current frame
-        grab_result = self.camera.RetrieveResult(500000, pylon.TimeoutHandling_ThrowException) # get current frame
+    def capture_current_frame(self, grab_result, dt_obj = None, display_img = False, save_captured_img = False):
+        # capture and display(+save) camera's current frame\
+        today_dir = self.check_dir_for_the_day()
+        
+        if dt_obj == None:
+            dt_obj = datetime.now().replace(microsecond=0)
+
+        file_name = f'{dt_obj.strftime(format = "%H%M%S")}.jpg'
         converted_result = self.converter.Convert(grab_result) # convert gained frame to cv2 readable format
         img_array = converted_result.GetArray() # get img array
-        dt_obj = datetime.now()
 
-        if display_img :
+        if display_img:
             # display image on a new window if param is true
-            cv2.imshow(f"{dt_obj.hour}-{dt_obj.minute}-{dt_obj.second}", img_array)
+            cv2.imshow(f"{file_name}", img_array)
             cv2.waitKey()
             cv2.destroyAllWindows()
         
         if save_captured_img:
-            # save current frame as jpg file at ./capture_img
-            if not os.path.isdir("./capture_img"):
-                os.mkdir("./capture_img")                 
-            cv2.imwrite(f'./capture_img/{dt_obj.hour}-{dt_obj.minute}-{dt_obj.second}.jpg',img_array)
+            # save current frame as jpg file at C:/Users/User/Documents/basler_camera_capture_img
+            if file_name not in os.listdir(today_dir):
+                cv2.imwrite(f'{today_dir}/{file_name}.jpg',img_array)
 
         return img_array
 
     def __call__(self, auto_capture = False):
-        print(""">>> press q to stop \n 
-                 >>> press c to capture and save current frame""")
+        print(">>> press q to stop \n >>> press c to capture and save current frame")
         
-        init_time = datetime.now()
+        init_time = datetime.now().replace(microsecond=0)
         
-        if str(auto_capture).isdigit():
+        if auto_capture != False:
             auto_capture, auto_capture_period = True, auto_capture
 
-        
         if not self.get_cam_status():
             self.run_camera()
-            print("cammera now running")
+            print('cammera now running')
         
         while self.get_cam_status():
-            grabResult = self.camera.RetrieveResult(500000, pylon.TimeoutHandling_ThrowException)
+            grabResult = self.camera.RetrieveResult(100000, pylon.TimeoutHandling_ThrowException)
             
             if grabResult.GrabSucceeded():
                 image = self.converter.Convert(grabResult)
                 img = image.GetArray()
-                img = imutils.resize(img, height=480)
-                cv2.imshow('hello', img)
-                k = cv2.waitKey(1)
+                img = imutils.resize(img, height=self.height)
+                cv2.imshow(f'{self.camera.GetDeviceInfo().GetModelName()}', img)
+                key = cv2.waitKey(1)
                 
-                if k == 113: # press q to stop
+                if key == 113: # press q to stop
+                    end_time = datetime.now().replace(microsecond=0)
                     break
+                elif (key == 118) and (not self.is_recording): # press v to start recording video
+                    self.is_recording = True
+                    record_init_time = datetime.now()
+                    print('>>> strat recording')
+                elif key == 115: # press s to stop recording video
+                    self.is_recording = False
+                    record_end_time = datetime.now()
+                    print('>>> stop recording')
+                
+                if self.is_recording: # append current frame array to a holder
+                    self.frame_holder.append(img)
 
-                if (auto_capture) and (((datetime.now() - init_time).seconds) % auto_capture_period == 0): # time condition need to be added
-                    self.capture_current_frame(display_img = False, save_captured_img = True)
+                temp_dt = datetime.now().replace(microsecond=0)
+                if (auto_capture) and (((temp_dt - init_time).seconds) % auto_capture_period == 0):
+                    self.capture_current_frame(grabResult, dt_obj = temp_dt, display_img = False, save_captured_img = True)
                 else:
-                    if k == 99: # press c to capture and save
-                        self.capture_current_frame(display_img = False, save_captured_img = True)
-            
+                    if key == 99: # press c to capture and save
+                        self.capture_current_frame(grabResult, display_img = False, save_captured_img = True)
+
             grabResult.Release()
+
+        if self.frame_holder: # if holder has frame make video with those frames
+            try :
+                record_end_time
+            except :
+                record_end_time = datetime.now()
+
+            video_runtime = round((record_end_time - record_init_time).total_seconds())
+            video_len_frames = len(self.frame_holder)
+            video_fps = round(video_len_frames/video_runtime)
+
+            today_dir = self.check_dir_for_the_day()
+            clip = moviepy.video.io.ImageSequenceClip.ImageSequenceClip(self.frame_holder, fps=video_fps)
+            clip.write_videofile(f'{today_dir}/{record_init_time.strftime("%H%M%S")}_{record_end_time.strftime("%H%M%S")}.mp4')
+
         cv2.destroyAllWindows()
         self.stop_camera()
 
 
 # arguments 
 parser = argparse.ArgumentParser(description='basler_camera')
-parser.add_argument('--autocapture_period', default = False, help='by second')
+parser.add_argument('--height_multiplier', default = 1, type = int, help='default 480 * n (n == 1)') ##### newally added
+parser.add_argument('--autocapture_period', default = False, help='takes integer value. period by second')
+
 args = parser.parse_args()
 
 
 # main
 if __name__ == '__main__':
-    cam = basler()
+    cam = basler(args.height_multiplier)
     if args.autocapture_period:
+        assert args.autocapture_period.isdigit(), 'autocapture period must be integer'
         cam(auto_capture = int(args.autocapture_period))
     else:
         cam()
