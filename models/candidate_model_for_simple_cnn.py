@@ -45,22 +45,22 @@ class simpleCNN(nn.Module):
         self.ffn_lt_1 = nn.Linear(1521, 2**7)
         self.ffn_lt_2 = nn.Linear(2**7, 2**5)
         self.ffn_lt_3 = nn.Linear(2**5, 2**3)
-        self.ffn_lt_out = nn.Linear(2**3, 1)
+        self.ffn_lt_out = nn.Linear(2**3, 2)
 
         self.ffn_rt_1 = nn.Linear(1521, 2**7)
         self.ffn_rt_2 = nn.Linear(2**7, 2**5)
         self.ffn_rt_3 = nn.Linear(2**5, 2**3)
-        self.ffn_rt_out = nn.Linear(2**3, 1)
+        self.ffn_rt_out = nn.Linear(2**3, 2)
 
         self.ffn_lb_1 = nn.Linear(1521, 2**7)
         self.ffn_lb_2 = nn.Linear(2**7, 2**5)
         self.ffn_lb_3 = nn.Linear(2**5, 2**3)
-        self.ffn_lb_out = nn.Linear(2**3, 1)
+        self.ffn_lb_out = nn.Linear(2**3, 2)
 
         self.ffn_rb_1 = nn.Linear(1521, 2**7)
         self.ffn_rb_2 = nn.Linear(2**7, 2**5)
         self.ffn_rb_3 = nn.Linear(2**5, 2**3)
-        self.ffn_rb_out = nn.Linear(2**3, 1)
+        self.ffn_rb_out = nn.Linear(2**3, 2)
         
     
     def forward(self, x):
@@ -89,7 +89,7 @@ class simpleCNN(nn.Module):
         rb = F.relu(self.ffn_rb_out(rb))
 
         out = torch.cat((lt,rt,lb,rb),1)
-        return x
+        return out
 
     
 
@@ -172,3 +172,4 @@ class simpleCNN(nn.Module):
 
 model = simpleCNN()
 torchsummary.summary(model, (3,960,960))
+
