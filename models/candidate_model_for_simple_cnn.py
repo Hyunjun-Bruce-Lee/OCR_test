@@ -170,6 +170,9 @@ class simpleCNN(nn.Module):
         x = self.avg_p(x)
         return x
 
+
+# above model loss spikes evey epochs
+
 model = simpleCNN()
 torchsummary.summary(model, (3,960,960))
 
