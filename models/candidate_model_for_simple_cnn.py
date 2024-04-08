@@ -8,9 +8,10 @@ from torchvision.io import read_image
 
 import torchsummary
 
+BASE_CHANNEL = 3
 
 # model1 -> loss converges, but loss spikes every epoch
-class simpleCNN(nn.Module):
+class simpleCNN_mk1(nn.Module):
     def __init__(self): 
         super().__init__()
         self.conv1 = nn.Conv2d(3, 1, 11, stride=3, padding = 1) 
@@ -33,7 +34,7 @@ class simpleCNN(nn.Module):
     
 
 # model1-1
-class simpleCNN(nn.Module):
+class simpleCNN_mk2(nn.Module):
     def __init__(self): 
         super().__init__()
         self.conv1 = nn.Conv2d(3, 1, 11, stride=3, padding = 1) 
@@ -95,32 +96,31 @@ class simpleCNN(nn.Module):
 
 
 # model2 -> -> loss converges, but loss spikes every epoch (performance little better then model 1)
-base_channel = 3
-class simpleCNN(nn.Module):
+class simpleCNN_mk3(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(base_channel, base_channel*2, 7, stride=1, padding=3)
-        self.bnorm1 = nn.BatchNorm2d(base_channel*2) 
+        self.conv1 = nn.Conv2d(BASE_CHANNEL, BASE_CHANNEL*2, 7, stride=1, padding=3)
+        self.bnorm1 = nn.BatchNorm2d(BASE_CHANNEL*2) 
         self.pool1 = nn.MaxPool2d(2,2)
 
-        self.conv2 = nn.Conv2d(base_channel*2, base_channel*4, 7, stride=1, padding=3)
-        self.bnorm2 = nn.BatchNorm2d(base_channel*4) 
+        self.conv2 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL*4, 7, stride=1, padding=3)
+        self.bnorm2 = nn.BatchNorm2d(BASE_CHANNEL*4) 
         self.pool2 = nn.MaxPool2d(2,2)
 
-        self.conv3 = nn.Conv2d(base_channel*4, base_channel*6, 3, stride=2, padding=1)
-        self.bnorm3 = nn.BatchNorm2d(base_channel*6) 
+        self.conv3 = nn.Conv2d(BASE_CHANNEL*4, BASE_CHANNEL*6, 3, stride=2, padding=1)
+        self.bnorm3 = nn.BatchNorm2d(BASE_CHANNEL*6) 
         self.pool3 = nn.MaxPool2d(2,2)
 
-        self.conv4 = nn.Conv2d(base_channel*6, base_channel*4, 3, stride=1, padding=1)
-        self.bnorm4 = nn.BatchNorm2d(base_channel*4) 
+        self.conv4 = nn.Conv2d(BASE_CHANNEL*6, BASE_CHANNEL*4, 3, stride=1, padding=1)
+        self.bnorm4 = nn.BatchNorm2d(BASE_CHANNEL*4) 
         self.pool4 = nn.MaxPool2d(2,2) 
 
-        self.conv5 = nn.Conv2d(base_channel*4, base_channel*2, 3, stride=1, padding=1)
-        self.bnorm5 = nn.BatchNorm2d(base_channel*2)
+        self.conv5 = nn.Conv2d(BASE_CHANNEL*4, BASE_CHANNEL*2, 3, stride=1, padding=1)
+        self.bnorm5 = nn.BatchNorm2d(BASE_CHANNEL*2)
         self.pool5 = nn.MaxPool2d(2,2)
 
-        self.conv6 = nn.Conv2d(base_channel*2, base_channel, 3, stride=1, padding=1)
-        self.bnorm6 = nn.BatchNorm2d(base_channel)
+        self.conv6 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL, 3, stride=1, padding=1)
+        self.bnorm6 = nn.BatchNorm2d(BASE_CHANNEL)
         self.pool6 = nn.MaxPool2d(2,2) 
 
         self.linear1 = nn.Linear(3*7*7, 2**7)
@@ -148,17 +148,17 @@ class simpleCNN(nn.Module):
 
 
 # model3 ->
-base_channel = 3
-class simpleCNN(nn.Module):
+BASE_CHANNEL = 3
+class simpleCNN_mk4(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1_1 = nn.Conv2d(base_channel, base_channel*2, 7, stride=1, padding=3)
-        self.conv1_2 = nn.Conv2d(base_channel*2, base_channel*4, 5, stride=1, padding = 3)
-        self.bnorm1 = nn.BatchNorm2d(base_channel*4) 
+        self.conv1_1 = nn.Conv2d(BASE_CHANNEL, BASE_CHANNEL*2, 7, stride=1, padding=3)
+        self.conv1_2 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL*4, 5, stride=1, padding = 3)
+        self.bnorm1 = nn.BatchNorm2d(BASE_CHANNEL*4) 
         self.max_p = nn.MaxPool2d(5)
-        self.conv2_1 = nn.Conv2d(base_channel*4, base_channel*2, 5, stride=1, padding = 1)
-        self.conv2_2 = nn.Conv2d(base_channel*2, base_channel, 3, stride=1)
-        self.bnorm2 = nn.BatchNorm2d(base_channel)
+        self.conv2_1 = nn.Conv2d(BASE_CHANNEL*4, BASE_CHANNEL*2, 5, stride=1, padding = 1)
+        self.conv2_2 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL, 3, stride=1)
+        self.bnorm2 = nn.BatchNorm2d(BASE_CHANNEL)
         self.avg_p = nn.AvgPool2d(5)
     
     def forward(self, x):
@@ -171,32 +171,32 @@ class simpleCNN(nn.Module):
         return x
 
 
-base_channel = 3
-class simpleCNN(nn.Module):
+BASE_CHANNEL = 3
+class simpleCNN_mk5(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(base_channel, base_channel*2, 7, stride=1, padding=3)
-        self.bnorm1 = nn.BatchNorm2d(base_channel*2) 
+        self.conv1 = nn.Conv2d(BASE_CHANNEL, BASE_CHANNEL*2, 7, stride=1, padding=3)
+        self.bnorm1 = nn.BatchNorm2d(BASE_CHANNEL*2) 
         self.pool1 = nn.MaxPool2d(2,2)
 
-        self.conv2 = nn.Conv2d(base_channel*2, base_channel*4, 7, stride=1, padding=3)
-        self.bnorm2 = nn.BatchNorm2d(base_channel*4) 
+        self.conv2 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL*4, 7, stride=1, padding=3)
+        self.bnorm2 = nn.BatchNorm2d(BASE_CHANNEL*4) 
         self.pool2 = nn.MaxPool2d(2,2)
 
-        self.conv3 = nn.Conv2d(base_channel*4, base_channel*6, 3, stride=2, padding=1)
-        self.bnorm3 = nn.BatchNorm2d(base_channel*6) 
+        self.conv3 = nn.Conv2d(BASE_CHANNEL*4, BASE_CHANNEL*6, 3, stride=2, padding=1)
+        self.bnorm3 = nn.BatchNorm2d(BASE_CHANNEL*6) 
         self.pool3 = nn.MaxPool2d(2,2)
 
-        self.conv4 = nn.Conv2d(base_channel*6, base_channel*4, 3, stride=1, padding=1)
-        self.bnorm4 = nn.BatchNorm2d(base_channel*4) 
+        self.conv4 = nn.Conv2d(BASE_CHANNEL*6, BASE_CHANNEL*4, 3, stride=1, padding=1)
+        self.bnorm4 = nn.BatchNorm2d(BASE_CHANNEL*4) 
         self.pool4 = nn.MaxPool2d(2,2) 
 
-        self.conv5 = nn.Conv2d(base_channel*4, base_channel*2, 3, stride=1, padding=1)
-        self.bnorm5 = nn.BatchNorm2d(base_channel*2)
+        self.conv5 = nn.Conv2d(BASE_CHANNEL*4, BASE_CHANNEL*2, 3, stride=1, padding=1)
+        self.bnorm5 = nn.BatchNorm2d(BASE_CHANNEL*2)
         self.pool5 = nn.MaxPool2d(2,2)
 
-        self.conv6 = nn.Conv2d(base_channel*2, base_channel, 3, stride=1, padding=1)
-        self.bnorm6 = nn.BatchNorm2d(base_channel)
+        self.conv6 = nn.Conv2d(BASE_CHANNEL*2, BASE_CHANNEL, 3, stride=1, padding=1)
+        self.bnorm6 = nn.BatchNorm2d(BASE_CHANNEL)
         self.pool6 = nn.MaxPool2d(2,2) 
 
         self.linear1 = nn.Linear(3*7*7, 2**7)
@@ -226,7 +226,7 @@ class simpleCNN(nn.Module):
 # above model loss spikes evey epochs
 # tried nn.SiLU for activation function but loss still spikes
 
-model = simpleCNN()
+model = simpleCNN_mk4()
 torchsummary.summary(model, (3,960,960))
 
 
