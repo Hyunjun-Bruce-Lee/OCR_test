@@ -171,8 +171,62 @@ class simpleCNN(nn.Module):
         return x
 
 
+base_channel = 3
+class simpleCNN(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.conv1 = nn.Conv2d(base_channel, base_channel*2, 7, stride=1, padding=3)
+        self.bnorm1 = nn.BatchNorm2d(base_channel*2) 
+        self.pool1 = nn.MaxPool2d(2,2)
+
+        self.conv2 = nn.Conv2d(base_channel*2, base_channel*4, 7, stride=1, padding=3)
+        self.bnorm2 = nn.BatchNorm2d(base_channel*4) 
+        self.pool2 = nn.MaxPool2d(2,2)
+
+        self.conv3 = nn.Conv2d(base_channel*4, base_channel*6, 3, stride=2, padding=1)
+        self.bnorm3 = nn.BatchNorm2d(base_channel*6) 
+        self.pool3 = nn.MaxPool2d(2,2)
+
+        self.conv4 = nn.Conv2d(base_channel*6, base_channel*4, 3, stride=1, padding=1)
+        self.bnorm4 = nn.BatchNorm2d(base_channel*4) 
+        self.pool4 = nn.MaxPool2d(2,2) 
+
+        self.conv5 = nn.Conv2d(base_channel*4, base_channel*2, 3, stride=1, padding=1)
+        self.bnorm5 = nn.BatchNorm2d(base_channel*2)
+        self.pool5 = nn.MaxPool2d(2,2)
+
+        self.conv6 = nn.Conv2d(base_channel*2, base_channel, 3, stride=1, padding=1)
+        self.bnorm6 = nn.BatchNorm2d(base_channel)
+        self.pool6 = nn.MaxPool2d(2,2) 
+
+        self.linear1 = nn.Linear(3*7*7, 2**7)
+        self.linear2 = nn.Linear(2**7, 2**6)
+        self.linear3 = nn.Linear(2**6, 2**5)
+        self.linear4 = nn.Linear(2**5, 2**4)
+        self.out = nn.Linear(2**4, 2**3)
+
+
+    def forward(self, x):
+        x = self.pool1(nn.SiLU(self.bnorm1(self.conv1(x))))
+        x = self.pool2(nn.SiLU(self.bnorm2(self.conv2(x))))
+        x = self.pool3(nn.SiLU(self.bnorm3(self.conv3(x))))
+        x = self.pool4(nn.SiLU(self.bnorm4(self.conv4(x))))
+        x = self.pool5(nn.SiLU(self.bnorm5(self.conv5(x))))
+        x = self.pool6(nn.SiLU(self.bnorm6(self.conv6(x))))
+        x = torch.flatten(x, 1)
+        x = nn.SiLU(self.linear1(x))
+        x = nn.SiLU(self.linear2(x))
+        x = nn.SiLU(self.linear3(x))
+        x = nn.SiLU(self.linear4(x))
+        x = self.out(x)
+        return x
+
+
+
 # above model loss spikes evey epochs
+# tried nn.SiLU for activation function but loss still spikes
 
 model = simpleCNN()
 torchsummary.summary(model, (3,960,960))
+
 
