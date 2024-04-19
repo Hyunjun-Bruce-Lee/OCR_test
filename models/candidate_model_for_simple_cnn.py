@@ -230,3 +230,4 @@ model = simpleCNN_mk4()
 torchsummary.summary(model, (3,960,960))
 
 
+# it seams that it needs other approch
